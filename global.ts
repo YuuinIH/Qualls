@@ -1,0 +1,1 @@
+type GenderName = "" | "M" | "F" | "N"
