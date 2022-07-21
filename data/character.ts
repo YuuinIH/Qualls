@@ -1,4 +1,4 @@
-export const ElvesDex:{[Elevename:string]:ElvesSpecies} = {
+export const CharacterDex:{[CharacterName:string]:CharactersSpecies} = {
     Dirant:{
         num: 3,
         name: 'Dirant',

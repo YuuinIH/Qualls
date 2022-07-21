@@ -2,7 +2,7 @@
 	"compilerOptions": {
 			"lib": ["es2020"],
 			"emitDeclarationOnly": true,
-			"outDir": "./.sim-dist",
+			"outDir": "../.sim-dist",
 			"declaration": true,
 			"target": "esnext",
 			"module": "ESNext",
@@ -13,7 +13,6 @@
 	},
 	"types": ["node"],
 	"include": [
-			"./global.ts",
-			"./index.ts",
+		"./global.ts",
 	]
 }

@@ -1,6 +1,7 @@
-import { MarkSpecies } from "./mark";
+import { Side } from "./battle";
 
-export class ElvesSpecies{
+
+export interface CharactersSpecies{
     num: number;
     name: string;
     types: string[];
@@ -12,12 +13,12 @@ export class ElvesSpecies{
 
 interface MoveSlots{
     id: number;
-    move: Move;
+    move: Readonly<MoveData>;
     cost: number;
     target?: string;
 }
 
-export class ElfOnBuild{
+export interface CharacterOnBuild{
     //精灵名称，使用时请总是转换为对应的精灵ID
     species:string;
     //预留空间，为可选的特性做准备
@@ -29,7 +30,7 @@ export class ElfOnBuild{
     //性别
     gender: string;
     //学习力/努力值
-    evs: StatsTable;
+    evs: EVS;
     //个体值/资质
     ivs: number;
     //等级，通常1-100 也支持0级甚至9999级等用于测试
@@ -38,15 +39,16 @@ export class ElfOnBuild{
     hasCoat: boolean;
 }
 
-export class Elf{
+export class Character{
     readonly side: Side
     readonly level: number;
     readonly gender: GenderName;
     //可变，可能会发生变身
-    species: ElvesSpecies;
+    species: CharactersSpecies;
     types: string[];
 
     moveSlots:MoveSlots[];
+    storestat:StatsExceptHPTable
 
     maxhp:number;
     hp:number;
@@ -54,9 +56,10 @@ export class Elf{
     fainted:boolean;
     faintQueued:boolean;
 
+    //上一个实际使用的技能
     lastMove: Move|null;
+    //上一个选择的技能
     lastMoveSelect: Move|null;
-    moveThisTurn: Move|null;
 
     //上一次受到的伤害
     lastDamage: number;
@@ -66,12 +69,17 @@ export class Elf{
     speed: number;
 
     mark: Mark[];
+    constructor(side: Side, CharacterOnBuild: CharacterOnBuild){
+        this.side = side;
+        this.level = CharacterOnBuild.level;
+        //TODO:性别
+        // this.gender = CharacterOnBuild.gender;
+        this.gender='N'
 
-    moveUsed(move:Move, target:Elf){
-        this.lastMove = move;
     }
 
-    gotHit(move:Move, damage:number|null, source:Elf){
-        this.lastDamage = damage?damage:0;
+    calculateStat(statName:StatIDExceptHP,boost: number,modifier?:number){  
+        let stat = this.storestat[statName]
+        const boostName
     }
 }
