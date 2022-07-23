@@ -1,4 +1,4 @@
-import { Character,CharacterOnBuild } from "./character";
+import { Character,CharacterOnBuild, MoveSlots } from "./character";
 import { ActiveMove } from "./moves";
 
 export type GameType = 'single';
@@ -32,6 +32,20 @@ export enum BattlePhase{
     BattleEnd
 }
 
+export enum Choose{
+    idle,
+    Move,
+    MoveClimax,
+    SwitchCharacter,
+    Surrender
+}
+
+export interface ChooseOption{
+    choose: Choose;
+    target?: Character;
+    move?: MoveSlots;
+}
+
 export class Side{
     readonly Battle: Battle;
     readonly id: SideID;
@@ -39,6 +53,8 @@ export class Side{
     readonly name: string;
     character: Character[];
     activeCharacter: Character[];
+    
+    choosen: ChooseOption|null;
 
     elfLeft: number;
     constructor(battle:Battle,SideOption:SideOption, sideid: SideID){
@@ -51,6 +67,19 @@ export class Side{
         }
         this.activeCharacter = this.character.slice();
         this.elfLeft = this.character.length;
+        this.choosen = null;
+    }
+
+    choose(choose:ChooseOption){
+        this.choosen = choose;
+    }
+
+    cancleChoose(){
+        this.choosen = null;
+    }
+
+    isReady(){
+        return this.choosen !== null;
     }
 }
 
@@ -81,13 +110,46 @@ export class Battle{
         this.chosen = 0;
     }
 
-    choose(side:SideID, move:string):boolean{
+    random(min:number, max:number):number{
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    choose(side:SideID, choose:ChooseOption):boolean{
         if (this.state !== BattlePhase.Choose){
             return false;
         }
-        
+        switch (side){
+            case SideID.p1:
+                this.side1.choose(choose);
+                break;
+            case SideID.p2:
+                this.side2.choose(choose);
+                break;
+            default:
+                return false;
+        }
+        if (this.side1.isReady() && this.side2.isReady()){
+            this.commitDecision();
+        }
         return true;
     }
+
+    cancleChoose(side:SideID):boolean{
+        if (this.state !== BattlePhase.Choose){
+            return false;
+        }
+        switch (side){
+            case SideID.p1:
+                this.side1.cancleChoose();
+                return true;
+            case SideID.p2:
+                this.side2.cancleChoose();
+                return true;
+            default:
+                return false;
+        }
+    }
+
 
     commitDecision(){
         

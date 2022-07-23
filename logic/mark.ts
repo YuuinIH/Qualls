@@ -15,14 +15,14 @@ export class Mark{
     destroyed:boolean = false;
     battle: Battle;
     owner: Character;
-    mark: MarkSpecies;
+    markSpecies: MarkSpecies;
     stacks: number;
     remainTurns: number|null;//null means infinite
 
-    constructor(battle: Battle, owner: Character, mark: MarkSpecies,remainTurns:number|null,stacks:number){
+    constructor(battle: Battle, owner: Character, markSpecies: MarkSpecies,remainTurns:number|null,stacks:number){
         this.battle = battle;
         this.owner = owner;
-        this.mark = mark;
+        this.markSpecies = markSpecies;
         this.remainTurns = remainTurns;
         this.stacks = stacks;
     }

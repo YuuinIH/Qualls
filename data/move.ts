@@ -1,15 +1,17 @@
+import { Character } from "../logic/character";
+import { ActiveMove, MoveData }from "../logic/moves";
 export const MovesDex:{[MoveName:string]:MoveData} = {
     fenlitupo:{
         id: 10005,
         name: "奋力突破",
         cost: 20,
         basePower: 65,
-        accuary: 95,
+        accuracy: 95,
         category: "physical",
         type: "normal",
         priority: 0,
-        afterHit: function(this: Battle, source: Elf, target: Elf, move: ActiveMove){
-            this.target.addMark("易伤");
+        onAfterHit: function(source:Character, target:Character){
+            target.addMark("易伤");
         }
     },
     lieyanjvexiji:{
@@ -21,9 +23,9 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "physical",
         type: "fire",
         priority: 0,
-        beforeClacDamage: function(this: Battle, source: Elf, target: Elf, move: ActiveMove){
-            if(target.battle.Random(100) < 5){
-                this.target.addMark("防御力降低");
+        onBeforeClacDamage: function(source:Character, target:Character, move: ActiveMove){
+            if(this.random(0,100) < 5){
+                target.addMark("防御力降低");
             }
         }
     },
@@ -36,8 +38,8 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "physical",
         type: "normal",
         priority: 2,
-        afterHit: function(this: Battle, source: Elf, target: Elf, move: ActiveMove){
-            this.source.addMark("佯攻");
+        onAfterHit: function(source:Character, target:Character, move: ActiveMove){
+            source.addMark("佯攻");
         }
     },
     qili:{
@@ -49,8 +51,8 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "status",
         type: "normal",
         priority: 0,
-        afterHit: function(this: Battle, source: Elf, target: Elf, move: ActiveMove){
-            this.source.addMark("攻击力提升");
+        onAfterHit: function(this: Battle, source:Character, target:Character, move: ActiveMove){
+            source.addMark("攻击力提升",1);
         }
     }
 }

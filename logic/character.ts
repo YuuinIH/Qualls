@@ -1,4 +1,5 @@
 import { Side } from "./battle";
+import { Mark } from "./mark";
 
 
 export interface CharactersSpecies{
@@ -11,7 +12,7 @@ export interface CharactersSpecies{
     weightkg: number;
 }
 
-interface MoveSlots{
+export interface MoveSlots{
     id: number;
     move: Readonly<MoveData>;
     cost: number;
@@ -43,6 +44,7 @@ export class Character{
     readonly side: Side
     readonly level: number;
     readonly gender: GenderName;
+    battle: Battle;
     //可变，可能会发生变身
     species: CharactersSpecies;
     types: string[];
@@ -57,9 +59,9 @@ export class Character{
     faintQueued:boolean;
 
     //上一个实际使用的技能
-    lastMove: Move|null;
+    lastMove: MoveData|null;
     //上一个选择的技能
-    lastMoveSelect: Move|null;
+    lastMoveSelect: MoveData|null;
 
     //上一次受到的伤害
     lastDamage: number;
@@ -69,7 +71,7 @@ export class Character{
     speed: number;
 
     mark: Mark[];
-    constructor(side: Side, CharacterOnBuild: CharacterOnBuild){
+    constructor(battle:Battle,side: Side, CharacterOnBuild: CharacterOnBuild){
         this.side = side;
         this.level = CharacterOnBuild.level;
         //TODO:性别
@@ -80,6 +82,20 @@ export class Character{
 
     calculateStat(statName:StatIDExceptHP,boost: number,modifier?:number){  
         let stat = this.storestat[statName]
-        const boostName
+    }
+    
+    addMark(markname:string,stack?:number,remainTurns?:number|null){
+        if (stack === undefined){
+            stack = 1;
+        }
+        if (remainTurns === undefined){
+            remainTurns = null;
+        }
+        let mark = this.mark.find(m=>m.markSpecies.name === markname);
+        if (mark !== undefined){
+            //TODO:堆叠
+        }else{
+            mark = new Mark(this.battle,this,this.battle.getMark(markname),remainTurns,stack);
+        }
     }
 }
