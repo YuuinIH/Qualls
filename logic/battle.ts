@@ -84,6 +84,9 @@ export class Side{
 }
 
 export class Battle{
+    getMark(markname: string): import("./mark").MarkSpecies {
+        throw new Error("Method not implemented.");
+    }
     readonly id: number;
     readonly debug: boolean;
 

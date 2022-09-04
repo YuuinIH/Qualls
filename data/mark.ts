@@ -1,3 +1,7 @@
+import { Character } from "@/character";
+import { MarkSpecies } from "@/mark";
+import { ActiveMove } from "@/moves";
+
 export const MarkDex:{[MarkName:string]:MarkSpecies}={
     yishang:{
         id:1,
@@ -9,7 +13,7 @@ export const MarkDex:{[MarkName:string]:MarkSpecies}={
         beforeSelfClacDamage(this:Mark,source:Character,target:Character,move:ActiveMove){
             move.overrideNumber = move.overrideNumber*1.5
         }
-    }
+    },
     yanggong:{
         id:2,
         name:"佯攻",

@@ -9,6 +9,8 @@ export interface MarkSpecies{
     description:string;//描述
 
     getStack?():number;//如果可以堆叠，获取堆叠数量
+    beforeSelfClacDamage?:any;
+    beforeClacDamage?:any;
 }
 
 export class Mark{

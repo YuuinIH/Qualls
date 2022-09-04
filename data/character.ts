@@ -1,3 +1,5 @@
+import { CharactersSpecies } from "@/character";
+
 export const CharacterDex:{[CharacterName:string]:CharactersSpecies} = {
     Dirant:{
         num: 3,

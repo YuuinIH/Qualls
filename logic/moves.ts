@@ -50,6 +50,8 @@ export class ActiveMove {
     priority: number;
     
     damage?: number;
+    overrideNumber: number;
+    name: string;
 
     constructor(battle:Battle,original: MoveData, source: Character, target: Character){
         this.battle = battle;

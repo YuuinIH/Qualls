@@ -1,5 +1,5 @@
 
-./character
+type Elf=any;
 export interface CommonEventHandle{
 
 }
