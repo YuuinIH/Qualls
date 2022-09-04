@@ -7,11 +7,12 @@ export interface MarkSpecies{
     stackable:boolean;//是否可以堆叠
     hasRemainTurn:boolean;//是否有剩余回合
     description:string;//描述
+    priority:number;//优先级
 
     getStack?():number;//如果可以堆叠，获取堆叠数量
 }
 
-export class Mark{
+export class MarkFragment{
     destroyed:boolean = false;
     battle: Battle;
     owner: Character;
@@ -26,23 +27,4 @@ export class Mark{
         this.remainTurns = remainTurns;
         this.stacks = stacks;
     }
-
-    Destroy(){
-        this.destroyed = true;
-    }
-
-    IsDestroyed(){
-        return this.destroyed;
-    }
-
-    GetStacks(){
-        return this.stacks;
-    }
-
-    RemainTurnsCountsDown(){
-        if (this.remainTurns == null) return;
-        this.remainTurns--;
-        if (this.remainTurns == 0) this.Destroy();
-    }
-
 }

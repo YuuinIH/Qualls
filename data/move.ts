@@ -1,5 +1,5 @@
 import { Character } from "../logic/character";
-import { ActiveMove, MoveData }from "../logic/moves";
+import { MoveAction, MoveData }from "../logic/moves";
 export const MovesDex:{[MoveName:string]:MoveData} = {
     fenlitupo:{
         id: 10005,
@@ -23,7 +23,7 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "physical",
         type: "fire",
         priority: 0,
-        onBeforeClacDamage: function(source:Character, target:Character, move: ActiveMove){
+        onBeforeClacDamage: function(source:Character, target:Character, move: MoveAction){
             if(this.random(0,100) < 5){
                 target.addMark("防御力降低");
             }
@@ -38,7 +38,7 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "physical",
         type: "normal",
         priority: 2,
-        onAfterHit: function(source:Character, target:Character, move: ActiveMove){
+        onAfterHit: function(source:Character, target:Character, move: MoveAction){
             source.addMark("佯攻");
         }
     },
@@ -51,7 +51,7 @@ export const MovesDex:{[MoveName:string]:MoveData} = {
         category: "status",
         type: "normal",
         priority: 0,
-        onAfterHit: function(this: Battle, source:Character, target:Character, move: ActiveMove){
+        onAfterHit: function(source:Character, target:Character, move: MoveAction){
             source.addMark("攻击力提升",1);
         }
     }

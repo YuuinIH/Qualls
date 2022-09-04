@@ -1,3 +1,7 @@
+import {Mark,MarkSpecies} from "../logic/mark";
+import {Battle} from "../logic/battle";
+import {Character} from "../logic/character";
+import {MoveAction} from "../logic/moves";
 export const MarkDex:{[MarkName:string]:MarkSpecies}={
     yishang:{
         id:1,
@@ -6,7 +10,7 @@ export const MarkDex:{[MarkName:string]:MarkSpecies}={
         stackable:false,
         hasRemainTurn:false,
         description:"受到的伤害增加50%",
-        beforeSelfClacDamage(this:Mark,source:Character,target:Character,move:ActiveMove){
+        beforeOwnerClacBeingDamage(mark:Mark,source:Character,owner:Character,move:MoveAction){
             move.overrideNumber = move.overrideNumber*1.5
         }
     }
@@ -17,10 +21,14 @@ export const MarkDex:{[MarkName:string]:MarkSpecies}={
         stackable:false,
         hasRemainTurn:false,
         description:"下一个除“佯攻”以外的技能增加50点威力",
-        beforeClacDamage(this:Mark,source:Character,target:Character,move:ActiveMove){
-            if(move.name != "佯攻"){
-                move.basePower += 50;
+        beforeOwnerClacDamage(mark:Mark,source:Character,target:Character,move:MoveAction){
+            if(move.type=="status"){
+                return
             }
+            if(move.original.name == "佯攻"){
+                return
+            }
+            move.basePower += 50;
         }
     }
 }

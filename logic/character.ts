@@ -40,11 +40,10 @@ export interface CharacterOnBuild{
     hasCoat: boolean;
 }
 
-export class Character{
+export class CharacterFragment{
     readonly side: Side
     readonly level: number;
     readonly gender: GenderName;
-    battle: Battle;
     //可变，可能会发生变身
     species: CharactersSpecies;
     types: string[];
@@ -78,24 +77,5 @@ export class Character{
         // this.gender = CharacterOnBuild.gender;
         this.gender='N'
 
-    }
-
-    calculateStat(statName:StatIDExceptHP,boost: number,modifier?:number){  
-        let stat = this.storestat[statName]
-    }
-    
-    addMark(markname:string,stack?:number,remainTurns?:number|null){
-        if (stack === undefined){
-            stack = 1;
-        }
-        if (remainTurns === undefined){
-            remainTurns = null;
-        }
-        let mark = this.mark.find(m=>m.markSpecies.name === markname);
-        if (mark !== undefined){
-            //TODO:堆叠
-        }else{
-            mark = new Mark(this.battle,this,this.battle.getMark(markname),remainTurns,stack);
-        }
     }
 }
