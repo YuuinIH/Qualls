@@ -1,3 +1,10 @@
 package-lock.json
 /node_modules
 /dist
+yarn.lock
+
+#重构前的暂时改动
+.gitignore
+data/mark.ts
+logic/condition.ts
+package.json
