@@ -10,6 +10,8 @@ export interface MarkSpecies{
     priority:number;//优先级
 
     getStack?():number;//如果可以堆叠，获取堆叠数量
+    beforeSelfClacDamage?:any;
+    beforeClacDamage?:any;
 }
 
 export class MarkFragment{

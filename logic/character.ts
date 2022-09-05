@@ -42,7 +42,7 @@ export interface CharacterOnBuild{
 
 export class CharacterFragment{
     readonly side: Side
-    readonly level: number;
+    readonly level?: number;
     readonly gender: GenderName;
     //可变，可能会发生变身
     species: CharactersSpecies;
@@ -70,9 +70,11 @@ export class CharacterFragment{
     speed: number;
 
     mark: Mark[];
-    constructor(battle:Battle,side: Side, CharacterOnBuild: CharacterOnBuild){
+    //battle and site should not be any ,battle:Battle,side:Side,
+    //but In order to escape type check,Do it any for now
+    constructor(battle:any,side: any, CharacterOnBuild?: CharacterOnBuild){
         this.side = side;
-        this.level = CharacterOnBuild.level;
+        this.level = CharacterOnBuild?.level;
         //TODO:性别
         // this.gender = CharacterOnBuild.gender;
         this.gender='N'

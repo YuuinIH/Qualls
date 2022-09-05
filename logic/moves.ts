@@ -49,6 +49,8 @@ export class MoveAction {
     priority: number;
     
     damage?: number;
+    overrideNumber: number;
+    name: string;
 
     constructor(original: MoveData, source: Character, target: Character){
         this.original = original;
