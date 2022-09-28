@@ -1,7 +1,13 @@
-import { Character } from "./character";
+import { CharacterFragment } from "./character";
+
+export type MarkID = string;
+
+export interface MarkDex{
+    readonly [ID:MarkID]:Readonly<MarkSpecies>
+}
 
 export interface MarkSpecies{
-    id: number;
+    id: MarkID;
     name:string;
     unstable:boolean;//在更换精灵时是否会印记是否会消失
     stackable:boolean;//是否可以堆叠
@@ -9,24 +15,47 @@ export interface MarkSpecies{
     description:string;//描述
     priority:number;//优先级
 
-    getStack?():number;//如果可以堆叠，获取堆叠数量
     beforeSelfClacDamage?:any;
     beforeClacDamage?:any;
 }
 
-export class MarkFragment{
-    destroyed:boolean = false;
-    battle: Battle;
-    owner: Character;
+export interface MarkFragment{
+    destroyed:boolean
+    owner: CharacterFragment;
     markSpecies: MarkSpecies;
     stacks: number;
     remainTurns: number|null;//null means infinite
+}
 
-    constructor(battle: Battle, owner: Character, markSpecies: MarkSpecies,remainTurns:number|null,stacks:number){
-        this.battle = battle;
-        this.owner = owner;
-        this.markSpecies = markSpecies;
-        this.remainTurns = remainTurns;
-        this.stacks = stacks;
+export class MarkSystem{
+    private readonly markDex:MarkDex
+    constructor(markDex:MarkDex){
+        this.markDex=markDex
+    }
+
+    GetMarkSpecies(ID:string):MarkSpecies{
+        if (!this.IsValidMark(ID)) {
+            throw new Error("Mark not found")
+        }
+        return this.markDex[ID]
+    }
+
+    IsValidMark(ID:string):boolean{
+        return this.markDex[ID]!==undefined
+    }
+
+    NewMark(owner:CharacterFragment,markID:MarkID,remainTurns:number|null,stacks:number){
+        const mark = {
+            destroyed:false,
+            owner,
+            markSpecies:this.GetMarkSpecies(markID),
+            stacks,
+            remainTurns,
+        }
+        owner.mark.push(mark)
+    }
+
+    DestroyMark(mark:MarkFragment){
+        mark.destroyed=true
     }
 }

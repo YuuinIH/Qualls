@@ -1,6 +1,6 @@
-import { CharactersSpecies } from "@/character";
+import { CharacterDex } from "@/character";
 
-export const CharacterDex:{[CharacterName:string]:CharactersSpecies} = {
+export const characterDex:CharacterDex = {
     Dirant:{
         num: 3,
         name: 'Dirant',

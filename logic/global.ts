@@ -2,7 +2,7 @@ type GenderName = "" | "M" | "F" | "N"
 
 type Battle = import("./battle").Battle
 
-type MoveData = import("./moves").MoveData
+type MoveData = import("./move").MoveData
 
 
 type Side = import("./battle").Side
