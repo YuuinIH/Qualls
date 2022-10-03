@@ -1,77 +1,8 @@
-import { MarkFragment, MarkID, MarkSystem } from "./mark";
-import { NatureID, NatureSystem } from "./nature";
-import { MoveSlot, MoveSystem } from "./move";
-import { GameType } from "./typechart";
-
-export interface CharacterDex {
-    [name: string]: CharactersSpecies;
-}
-
-export interface CharactersSpecies {
-    num: number;
-    name: string;
-    types: GameType[];
-    abilities: string;
-    baseStats: { [key: string]: number };
-    heightm: number;
-    weightkg: number;
-}
-
-export interface CharacterOnBuild {
-    //精灵名称，使用时请总是转换为对应的精灵ID
-    species: string;
-    //预留空间，为可选的特性做准备
-    ability: string;
-    //技能
-    moves: string[];
-    //性格
-    nature: string;
-    //性别
-    gender: GenderName;
-    //学习力/努力值
-    evs: StatsTable;
-    //个体值/资质
-    ivs: number;
-    //等级，通常1-100 也支持0级甚至9999级等用于测试
-    level: number;
-
-    //纹章
-    coat: null | string;
-}
-
-export type CharacterFragment = {
-    readonly level: number;
-    readonly gender: GenderName;
-    //可变，可能会发生变身
-    species: CharactersSpecies;
-    types: GameType[];
-    nature: NatureID;
-
-    moveSlots: MoveSlot[];
-
-    maxhp: number;
-    hp: number;
-    ivs: number;
-    evs: StatsTable;
-
-    stat: StatsExceptHPTable;
-
-    fainted: boolean;
-    faintQueued: boolean;
-
-    //上一个实际使用的技能
-    lastMove: MoveData | null;
-    //上一个选择的技能
-    lastMoveSelect: MoveData | null;
-
-    //上一次受到的伤害
-    lastDamage: number;
-
-    weightkg: number;
-    heightm: number;
-
-    mark: MarkFragment[];
-};
+import { MarkSystem } from "./mark";
+import { NatureSystem } from "./nature";
+import { MoveSystem } from "./move";
+import { CharacterDex, CharacterEntity, CharacterOnBuild } from "./entity/character";
+import { MarkID } from "./entity/mark";
 
 export class CharacterSystem {
     readonly NatureSystem: NatureSystem;
@@ -94,10 +25,10 @@ export class CharacterSystem {
         this.MoveSystem = MoveSystem;
     }
 
-    NewCharacter(build: CharacterOnBuild): CharacterFragment {
+    NewCharacter(build: CharacterOnBuild): CharacterEntity {
         const species = this.CharacterDex[build.species];
         if (!species) throw new Error("Species not found: " + build.species);
-        const character: CharacterFragment = {
+        const character: CharacterEntity = {
             species,
             level: build.level,
             types: species.types,
@@ -137,7 +68,7 @@ export class CharacterSystem {
     }
 
     //TODO:在最大HP变化时，更新HP
-    UpdateMaxHP(character: CharacterFragment, init: boolean = false) {
+    UpdateMaxHP(character: CharacterEntity, init: boolean = false) {
         const species = character.species;
         const level = character.level;
         const iv = character.ivs;
@@ -156,7 +87,7 @@ export class CharacterSystem {
     }
 
     //TODO: 能力加成
-    UpdateStat(character: CharacterFragment) {
+    UpdateStat(character: CharacterEntity) {
         const nature = character.nature;
         const natureEffect = this.NatureSystem.GetNatureStatAffect(nature);
         for (const stat in natureEffect) {
@@ -177,7 +108,7 @@ export class CharacterSystem {
     }
 
     //TODO:..
-    AddMark(character: CharacterFragment, markID: MarkID, ...opt: any) {
+    AddMark(character: CharacterEntity, markID: MarkID, ...opt: any) {
         for (const mark of character.mark) {
             if (mark.markSpecies.id === markID) {
                 //TODO: 重复标记时的处理

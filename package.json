@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/YuuinIH/Qualls#readme",
   "dependencies": {
-    "@datastructures-js/priority-queue": "^6.1.2"
+    "@datastructures-js/priority-queue": "^6.1.2",
+    "random-js": "^2.1.0"
   },
   "devDependencies": {
     "jest": "^29.0.2",

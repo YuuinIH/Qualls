@@ -1,21 +1,27 @@
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 import { AngerSystem } from "./anger";
-import { Side } from "./battle";
-import { CharacterFragment, CharacterSystem } from "./character";
+import { CharacterSystem } from "./character";
 import { Events, EventType, EventDefaultPriority } from "./event";
-import { MoveFragment, MoveSystem } from "./move";
+import { MoveSystem } from "./move";
 import { DamageAndHealSystem } from "./damage_heal";
+import { Battle, BattleOption, Side } from "./entity/battle";
+import { CharacterEntity } from "./entity/character";
+import { MoveEvent } from "./entity/move";
+import { RandomSystem } from "./random";
 
 //管理实际操作的组件
 export class ActionSystem {
   readonly Battle: Battle;
+  readonly BattleOption: Readonly<BattleOption>;
   readonly CharacterSystem: CharacterSystem;
   readonly MoveSystem: MoveSystem;
   readonly AngerSystem: AngerSystem;
   readonly DamageAndHealSystem: DamageAndHealSystem;
+  readonly RandomSystem: RandomSystem;
 
-  constructor(Battle:Battle,CharacterSystem: CharacterSystem, MoveSystem: MoveSystem,AngerSystem:AngerSystem,DamageAneHealSystem:DamageAndHealSystem) {
+  constructor(Battle:Battle,BattleOption:BattleOption,CharacterSystem: CharacterSystem, MoveSystem: MoveSystem,AngerSystem:AngerSystem,DamageAneHealSystem:DamageAndHealSystem) {
     this.Battle=Battle;
+    this.BattleOption=BattleOption;
     this.CharacterSystem = CharacterSystem;
     this.MoveSystem = MoveSystem;
     this.AngerSystem = AngerSystem;
@@ -23,7 +29,7 @@ export class ActionSystem {
   }
   switchCharacter(
     side: Side,
-    target: CharacterFragment
+    target: CharacterEntity
   ){
     if (target===side.character[0]){
         return
@@ -31,6 +37,7 @@ export class ActionSystem {
     for (let i=0;i<side.character.length;i++){
         if (side.character[i]===target){
             [side.character[0],side.character[i]]=[side.character[i],side.character[0]]
+            this.AngerSystem.costAngerPercent(side,this.BattleOption.SwitchCostPercent)
             return;
         }
     }
@@ -41,12 +48,9 @@ export class ActionSystem {
   tryUseMove(
     queue: PriorityQueue<Events>,
     side: Side,
-    character: CharacterFragment,
-    move: MoveFragment
+    character: CharacterEntity,
+    move: MoveEvent
   ) {
-    if (move.cost > side.anger) {
-      return false;
-    }
     if (!this.AngerSystem.costAnger(side, move.cost)) {
       return false;
     }
@@ -58,17 +62,15 @@ export class ActionSystem {
       priority: EventDefaultPriority.CheckHit,
       move: move,
     });
-
     return true;
   }
   checkHit(
     queue: PriorityQueue<Events>,
     side: Side,
-    character: CharacterFragment,
-    move: MoveFragment
+    character: CharacterEntity,
+    move: MoveEvent
   ){
-    let randomnumber = this.Battle.random(0, 100);
-    if (randomnumber > move.accuracy) {
+    if (this.RandomSystem.Bool(move.accuracy)) {
       return false;
     }
     queue.enqueue({
@@ -83,14 +85,12 @@ export class ActionSystem {
   checkCrit(
     queue: PriorityQueue<Events>,
     side: Side,
-    character: CharacterFragment,
-    move: MoveFragment
+    character: CharacterEntity,
+    move: MoveEvent
   ){
-    let randomnumber = this.Battle.random(0, 100);
-    //TODO: 可变的暴击率
-    let iscrit = randomnumber < 5;
-    if (randomnumber > 5) {
-      return false;
+    let crit = false;
+    if (this.RandomSystem.Bool(move.critRate)) {
+      crit = true;
     }
     queue.enqueue({
       type: EventType.Damage,
@@ -98,15 +98,15 @@ export class ActionSystem {
       character: character,
       priority: EventDefaultPriority.Damage,
       move: move,
-      crit: iscrit
+      crit: true,
     });
     return true;
   }
     hit(
         queue: PriorityQueue<Events>,
         side: Side,
-        character: CharacterFragment,
-        move: MoveFragment,
+        character: CharacterEntity,
+        move: MoveEvent,
         crit: boolean
     ){
         if (move.category!="status"){

@@ -1,18 +1,4 @@
-export type GameType = {
-    readonly ID: string,
-    readonly Name: string,
-}
-
-export interface GameTypeDex{
-    readonly types :{
-        readonly [GameTypeID:string]:GameType
-    }
-    readonly damageTakenMatrix: {
-        [GameTypeID:string]:{
-            readonly [GameTypeID:string]:number
-        },
-    }
-}
+import { GameType, GameTypeDex } from "./entity/character";
 
 export class TypeChartSystem{
     private readonly typeChartDex:GameTypeDex

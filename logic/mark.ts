@@ -1,36 +1,14 @@
-import { CharacterFragment } from "./character";
+import { Battle } from "./fragment/battle"
+import { CharacterEntity } from "./fragment/character"
+import { MarkDex, MarkEntity, MarkID, MarkSpecies } from "./fragment/mark"
 
-export type MarkID = string;
-
-export interface MarkDex{
-    readonly [ID:MarkID]:Readonly<MarkSpecies>
-}
-
-export interface MarkSpecies{
-    id: MarkID;
-    name:string;
-    unstable:boolean;//在更换精灵时是否会印记是否会消失
-    stackable:boolean;//是否可以堆叠
-    hasRemainTurn:boolean;//是否有剩余回合
-    description:string;//描述
-    priority:number;//优先级
-
-    beforeSelfClacDamage?:any;
-    beforeClacDamage?:any;
-}
-
-export interface MarkFragment{
-    destroyed:boolean
-    owner: CharacterFragment;
-    markSpecies: MarkSpecies;
-    stacks: number;
-    remainTurns: number|null;//null means infinite
-}
 
 export class MarkSystem{
     private readonly markDex:MarkDex
-    constructor(markDex:MarkDex){
+    private readonly battle:Battle
+    constructor(markDex:MarkDex,Battle:Battle){
         this.markDex=markDex
+        this.battle=Battle
     }
 
     GetMarkSpecies(ID:string):MarkSpecies{
@@ -44,7 +22,7 @@ export class MarkSystem{
         return this.markDex[ID]!==undefined
     }
 
-    NewMark(owner:CharacterFragment,markID:MarkID,remainTurns:number|null,stacks:number){
+    NewMark(owner:CharacterEntity,markID:MarkID,remainTurns:number|null,stacks:number){
         const mark = {
             destroyed:false,
             owner,
@@ -53,9 +31,18 @@ export class MarkSystem{
             remainTurns,
         }
         owner.mark.push(mark)
+        this.battle.mark.push(mark)
     }
 
-    DestroyMark(mark:MarkFragment){
+    DestroyMark(mark:MarkEntity){
         mark.destroyed=true
+    }
+
+    // Update all mark after a turn
+    TurnUpdate(){
+        for (const mark of this.battle.mark){
+            //todo：如果有update方法，尝试update，否则只对剩余回合数进行count down
+
+        }
     }
 }

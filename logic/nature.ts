@@ -1,14 +1,5 @@
-export type NatureID = string
+import { Nature, NatureDex, NatureID } from "./entity/character"
 
-export type Nature =  {
-    readonly Id: NatureID;
-    readonly Name: string;
-    readonly StatAffect : Readonly<StatsExceptHPTable>
-}
-
-export interface NatureDex{
-    readonly [ID:NatureID]:Readonly<Nature>
-}
 
 export interface NatureSystem{
     GetNature(ID:NatureID):Nature,

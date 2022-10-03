@@ -1,47 +1,15 @@
+import { CharacterSystem } from "./character";
+import { Battle,BattleOption,Side,SideID } from "./entity/battle";
+import { CharacterEntity, NatureDex} from "./entity/character";
+import { MoveSlot } from "./entity/move";
+import { compareEventPriority, EventDamage, EventDefaultPriority, EventMove, Events, EventSwitchCharacter, EventType } from "./event";
+import { NatureSystem } from "./nature";
 import { PriorityQueue } from "@datastructures-js/priority-queue";
-import {
-  CharacterFragment,
-  CharacterOnBuild,
-  CharacterSystem,
-} from "./character";
-import { MarkFragment } from "./mark";
-import { MoveFragment, MoveSlot, MoveSystem } from "./move";
-import { EventListener } from "./eventListener";
 import { ActionSystem } from "./action";
 import { AngerSystem } from "./anger";
-import { DamageAndHealSystem } from "./damage_heal";
-import {
-  EventDefaultPriority,
-  compareEventPriority,
-  Events,
-  EventMove,
-  EventType,
-  EventDamage,
-  EventSwitchCharacter,
-} from "./event";
-import { GameTypeDex } from "./typechart";
-
-export type GameType = "single";
-
-interface BattleOption {
-  format?: string;
-  formatid?: string;
-  debug?: boolean;
-  gameType: GameType;
-  PRngSeed?: [number, number, number, number];
-  side1Options: SideOption;
-  side2Options: SideOption;
-}
-
-interface SideOption {
-  name: string;
-  elfbuild: CharacterOnBuild[];
-}
-
-export enum SideID {
-  p1,
-  p2,
-}
+import { RandomSystem } from "./random";
+import { MoveSystem } from "./move";
+import { MarkEntity } from "./entity/mark";
 
 export enum BattlePhase {
   BattleStart,
@@ -59,130 +27,90 @@ export enum ChooseType {
 
 export interface ChooseOption {
   chooseType: ChooseType;
-  target: CharacterFragment | null;
+  target: CharacterEntity | null;
   move: MoveSlot | null;
 }
 
-export class Side {
-  readonly Battle: Battle;
-  readonly id: SideID;
-
-  readonly name: string;
-
-  character: CharacterFragment[]; // 数组第一个角色为当前在场角色
-
-  choosen: ChooseOption | null;
-
-  characterLeft: number;
-
-  anger: number;
-
-  constructor(battle: Battle, SideOption: SideOption, sideid: SideID) {
-    this.Battle = battle;
-    this.id = sideid;
-    this.name = SideOption.name;
-    this.character = new Array<CharacterFragment>(SideOption.elfbuild.length);
-    for (let [index, elf] of SideOption.elfbuild.entries()) {
-      this.character[index] = this.Battle.characterSystem.NewCharacter(elf);
+export class BattleImpl implements Battle {
+  Id: number;
+  Debug: boolean;
+  GameType: "single";
+  PRngSeed: number;
+  Side: Side[];
+  Turn: number;
+  mark: MarkEntity[];
+  character: CharacterEntity[];
+  constructor(
+    Id: number,
+    BattleOption: BattleOption,
+    CharacterSystem: CharacterSystem,
+  ){
+    this.Id=Id;
+    this.Debug=BattleOption.Debug;
+    this.GameType=BattleOption.GameType;
+    this.PRngSeed=BattleOption.PRngSeed;
+    this.Side=[];
+    this.Turn=0;
+    this.mark=[];
+    this.character=[];
+    for(const [sideId,sideOption] of BattleOption.SideOptions.entries()){
+      const side:Side={
+      Id:sideId,
+      name:sideOption.name,
+      character:[],
+      anger:BattleOption.StartAnger,
+      characterLeft:sideOption.CharacterBuild.length,
     }
-    this.characterLeft = this.character.length;
-    this.choosen = null;
-    this.anger = 20; //TODO: 可设置的初始怒气
-  }
-
-  choose(choose: ChooseOption) {
-    this.choosen = choose;
-  }
-
-  cancleChoose() {
-    this.choosen = null;
-  }
-
-  isReady() {
-    return this.choosen !== null;
-  }
-
-  getchoose(): ChooseOption | null {
-    return this.choosen;
+      for(const characterOption of sideOption.CharacterBuild){
+        const character:CharacterEntity=CharacterSystem.NewCharacter(characterOption);
+        side.character.push(character);
+        this.character.push(character);
+      }
+      this.Side.push(side);
+    }
   }
 }
 
-export class Battle {
-  readonly actionSystem: ActionSystem;
-  readonly eventListener: EventListener = new EventListener(this);
-  readonly angerSystem: AngerSystem = new AngerSystem();
-  readonly damageAndHealSystem: DamageAndHealSystem
-  readonly moveSystem: MoveSystem;
-  readonly characterSystem: CharacterSystem;
+//处理用户输入，输出，以及承载回合逻辑的system
+export class BattleSystem {
+  readonly BattleOption: Readonly<BattleOption>;
+  readonly Battle: Battle;
 
-  readonly id: number;
-  readonly debug: boolean;
+  readonly NatureDex:NatureDex
+  readonly NatureSystem:NatureSystem
+  readonly CharacterSystem:CharacterSystem
+  readonly ActionSystem:ActionSystem
+  readonly AngerSystem:AngerSystem
+  readonly RandomSystem: RandomSystem;
 
-  readonly gametype: GameType;
-  readonly PRngSeed: [number, number, number, number];
+  chosen: Map<SideID,ChooseOption>
 
-  turn: number;
-  state: BattlePhase;
-  side: Side[];
-
-  chosen: number;
-  CharacterSystem: any;
-
-  constructor(
-    gametypeDex: GameTypeDex,
-    battleOption: BattleOption,
-    charactersystem: CharacterSystem,
-    movesystem: MoveSystem,
-    actionsystem:ActionSystem
-  ) {
-    this.id = 0;
-    this.characterSystem = charactersystem;
-    this.moveSystem = movesystem;
-    this.actionSystem = actionsystem;
-    this.damageAndHealSystem = new DamageAndHealSystem(gametypeDex);
-    this.debug = battleOption.debug || false;
-    this.gametype = "single";
-    this.PRngSeed = battleOption.PRngSeed ?? [0, 0, 0, 0];
-    this.state = BattlePhase.BattleStart;
-    this.turn = 0;
-    this.side = [];
-    for (let side of [battleOption.side1Options, battleOption.side2Options]) {
-      this.side.push(new Side(this, side, SideID.p1));
-    }
-    this.chosen = 0;
+  constructor(BattleOption: BattleOption,Battle: Battle) {
+    this.BattleOption = BattleOption;
+    this.Battle = Battle
   }
 
-  random(min: number, max: number): number {
-    //TODO: seed
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  choose(sideID: SideID, chooseOption: ChooseOption){
+    this.chosen.set(sideID,chooseOption)
+    if (this.chosen.size>=2){
+      this.commitDecision()
+    }
   }
 
-  choose(sideID: SideID, chooseOption: ChooseOption): boolean {
-    if (this.state !== BattlePhase.Choose) {
-      return false;
-    }
-    this.side[sideID].choose(chooseOption);
-    if (this.side[SideID.p1].isReady() && this.side[SideID.p2].isReady()) {
-      this.commitDecision();
-    }
-    return true;
+  canclechoose(sideID:SideID){
+    this.chosen.delete(sideID)
   }
 
-  cancleChoose(sideID: SideID): boolean {
-    if (this.state !== BattlePhase.Choose) {
-      return false;
+  commitDecision(){
+    if (this.chosen.size<2){
+      throw new Error("not enough choose")
     }
-    this.side[sideID].cancleChoose();
-    return true;
-  }
-
-  commitDecision() {
     const queue = new PriorityQueue<Events>(compareEventPriority);
-    for (const side of this.side) {
-      let choose = side.getchoose();
+    for (const [sideId,choose] of this.chosen.entries()){ 
       if (choose === null) {
         throw new Error("choose is null");
       }
+      const side = this.Battle.Side[sideId]
       switch (choose.chooseType) {
         case ChooseType.Move:
           if (choose.target === undefined) {
@@ -235,9 +163,8 @@ export class Battle {
           throw new Error("chooseType is invalid");
       }
     }
-    this.goTurn(queue);
+    this.goTurn(queue);  
   }
-
   goTurn(queue: PriorityQueue<Events>) {
     while (!queue.isEmpty()) {
       let event = queue.dequeue();
@@ -246,26 +173,25 @@ export class Battle {
       }
       switch (event.type) {
         case EventType.SwitchCharacter:
-          this.actionSystem.switchCharacter(event.side, (event as EventSwitchCharacter).character);
+          this.ActionSystem.switchCharacter(event.side, (event as EventSwitchCharacter).character);
         case EventType.TryUseMove:
-          this.actionSystem.tryUseMove(queue,event.side,event.character,(event as EventMove).move);
+          this.ActionSystem.tryUseMove(queue,event.side,event.character,(event as EventMove).move);
           break;
         case EventType.CheckHit:
-          this.actionSystem.checkHit(queue,event.side,event.character,(event as EventMove).move);
+          this.ActionSystem.checkHit(queue,event.side,event.character,(event as EventMove).move);
           break;
         case EventType.CheckCrit:
-          this.actionSystem.checkCrit(queue,event.side,event.character,(event as EventMove).move);
+          this.ActionSystem.checkCrit(queue,event.side,event.character,(event as EventMove).move);
           break;
         case EventType.Hit:
-          this.actionSystem.hit(queue,event.side,event.character,(event as EventMove).move,(event as EventDamage).crit);
+          this.ActionSystem.hit(queue,event.side,event.character,(event as EventMove).move,(event as EventDamage).crit);
           break;
       }
     }
 
     //回合结束的流程
-    for (const side of this.side){
-      this.angerSystem.addAnger(side,20)
+    for (const side of this.Battle.Side){
+      this.AngerSystem.addAnger(side,15)
     }
-    this.state = BattlePhase.Choose;
   }
 }
