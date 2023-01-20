@@ -105,7 +105,12 @@ export class BattleSystem {
     if (this.chosen.size<2){
       throw new Error("not enough choose")
     }
+    this.initTurn()
+  }
+
+  initTurn() {
     const queue = new PriorityQueue<Events>(compareEventPriority);
+    const EvnetQueue = new Map<string, PriorityQueue<Events>>();
     for (const [sideId,choose] of this.chosen.entries()){ 
       if (choose === null) {
         throw new Error("choose is null");
@@ -163,6 +168,7 @@ export class BattleSystem {
           throw new Error("chooseType is invalid");
       }
     }
+
     this.goTurn(queue);  
   }
   goTurn(queue: PriorityQueue<Events>) {
@@ -173,7 +179,8 @@ export class BattleSystem {
       }
       switch (event.type) {
         case EventType.SwitchCharacter:
-          this.ActionSystem.switchCharacter(event.side, (event as EventSwitchCharacter).character);
+          const switchCharacterEvent = event as EventSwitchCharacter;
+          this.ActionSystem.switchCharacter(switchCharacterEvent.side, switchCharacterEvent.newCharacter);
         case EventType.TryUseMove:
           this.ActionSystem.tryUseMove(queue,event.side,event.character,(event as EventMove).move);
           break;

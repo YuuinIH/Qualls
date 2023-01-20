@@ -47,6 +47,8 @@ export class CharacterSystem {
                 spd: 0,
                 spe: 0,
             },
+            accuracy: 1,
+            evasion: 1,
 
             fainted: false,
 

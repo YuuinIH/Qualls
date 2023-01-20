@@ -1,6 +1,6 @@
-import { Battle } from "./fragment/battle"
-import { CharacterEntity } from "./fragment/character"
-import { MarkDex, MarkEntity, MarkID, MarkSpecies } from "./fragment/mark"
+import { Battle } from "./entity/battle"
+import { CharacterEntity } from "./entity/character"
+import { MarkDex, MarkEntity, MarkID, MarkSpecies } from "./entity/mark"
 
 
 export class MarkSystem{

@@ -1,7 +1,7 @@
-import { MoveFragment,MoveSlot } from "./move";
-import { CharacterFragment } from "./character";
-import { MarkFragment } from "./mark";
-import { Side } from "./battle";
+import { MoveEvent,MoveSlot } from "./entity/move";
+import { CharacterEntity } from "./entity/character";
+import { MarkEntity } from "./entity/mark";
+import { Side } from "./entity/battle";
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 
 export type EventQueue = PriorityQueue<Events>;
@@ -12,26 +12,25 @@ export type EventQueue = PriorityQueue<Events>;
 3. 优先级相同的事件，事件产生者速度快的先发生
 4. 速度相同的事件，按照side的id顺序发生
 */
-export const compareEventPriority = (a: Events, b: Events) => {
+export const compareEventPriority = <T extends Event,EventHasSource,EventHasTarget,EventMove>(a: T, b: T) => {
+    //不同类型的事件的比较，按照下方的defaultpriority从小到大排序
     if (a.priority != b.priority) {
-        return a.priority - b.priority;
+        return b.priority - a.priority;
     }
-    if ((a as EventMove).move&&(b as EventMove).move){
+    //TODO:可变的优先级
+    //todo:优先级相同的事件，事件产生者速度快的先发生
+
+    //有源事件之间的比较
+    if ((b as EventHasSource).source&&(a as EventHasSource).source){
         //技能本身的先制度
-        if ((a as EventMove).move.priority != (b as EventMove).move.priority) {
-            return (a as EventMove).move.priority - (b as EventMove).move.priority;
+        if ((b as EventMove).move.priority != (a as EventMove).move.priority) {
+            return (b as EventMove).move.priority - (a as EventMove).move.priority;
+        }
+        if ((b as EventMove).source.stat.spd != (a as EventMove).source.stat.spd) {
+            return (b as EventMove).source.stat.spd - (a as EventMove).source.stat.spd;
         }
     }
-    if ((a as EventMark).mark&&(b as EventMark).mark){
-        //标记的优先级
-        if ((a as EventMark).mark.markSpecies.priority != (b as EventMark).mark.markSpecies.priority) {
-            return (a as EventMark).mark.markSpecies.priority - (b as EventMark).mark.markSpecies.priority;
-        }
-    }
-    if (a.character.stat.spd != b.character.stat.spd) {
-        return a.character.stat.spd - b.character.stat.spd;
-    }
-    return a.side.id - b.side.id;
+    return a.side.Id - b.side.Id;
 }
 
 export enum EventDefaultPriority {
@@ -72,37 +71,33 @@ export enum EventType{
 
 export interface Event{
     type: EventType;
-    side: Side;
-    character: CharacterFragment;
     priority: number;
+    side:Side
 }
 
-export interface EventTryUseMove extends Event{
-    type: EventType.TryUseMove;
+export interface EventHasSource extends Event{
+    source:CharacterEntity|MarkEntity
+}
+
+export interface EventHasTarget extends EventHasSource{
+    target:CharacterEntity
+}
+
+export interface EventTryUseMove extends EventHasTarget{
     select: MoveSlot;
 }
 
-export interface EventMove extends Event{
-    move: MoveFragment;
+export interface EventMove extends EventHasTarget{
+    source:CharacterEntity;
+    move: MoveEvent;
     cost: number;
-    target : CharacterFragment;
 }
 
-export interface EventDamage extends Event{
+export interface EventDamage extends EventMove{
     crit: boolean;
-    target: CharacterFragment;
+    damage: number;
 }
-
-export interface EventMark extends Event{
-    mark: MarkFragment;
-}
-
-// export interface EventEffect extends Event{
-//     effect: EffectFragment;
-// }
 
 export interface EventSwitchCharacter extends Event{
-    newCharacter: CharacterFragment;
+    newCharacter: CharacterEntity;
 }
-
-export type Events = Event|EventTryUseMove|EventMove|EventSwitchCharacter|EventDamage;

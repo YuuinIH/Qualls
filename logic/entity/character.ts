@@ -69,6 +69,8 @@ export type CharacterEntity = {
     evs: StatsTable;
 
     stat: StatsExceptHPTable;
+    accuracy: number;
+    evasion: number;
 
     fainted: boolean;
     faintQueued: boolean;

@@ -1,7 +1,7 @@
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 import { AngerSystem } from "./anger";
 import { CharacterSystem } from "./character";
-import { Events, EventType, EventDefaultPriority } from "./event";
+import { Event, EventType, EventDefaultPriority } from "./event";
 import { MoveSystem } from "./move";
 import { DamageAndHealSystem } from "./damage_heal";
 import { Battle, BattleOption, Side } from "./entity/battle";
@@ -19,34 +19,44 @@ export class ActionSystem {
   readonly DamageAndHealSystem: DamageAndHealSystem;
   readonly RandomSystem: RandomSystem;
 
-  constructor(Battle:Battle,BattleOption:BattleOption,CharacterSystem: CharacterSystem, MoveSystem: MoveSystem,AngerSystem:AngerSystem,DamageAneHealSystem:DamageAndHealSystem) {
-    this.Battle=Battle;
-    this.BattleOption=BattleOption;
+  constructor(
+    Battle: Battle,
+    BattleOption: BattleOption,
+    CharacterSystem: CharacterSystem,
+    MoveSystem: MoveSystem,
+    AngerSystem: AngerSystem,
+    DamageAneHealSystem: DamageAndHealSystem
+  ) {
+    this.Battle = Battle;
+    this.BattleOption = BattleOption;
     this.CharacterSystem = CharacterSystem;
     this.MoveSystem = MoveSystem;
     this.AngerSystem = AngerSystem;
     this.DamageAndHealSystem = DamageAneHealSystem;
   }
-  switchCharacter(
-    side: Side,
-    target: CharacterEntity
-  ){
-    if (target===side.character[0]){
-        return
+  switchCharacter(side: Side, target: CharacterEntity) {
+    if (target === side.character[0]) {
+      return;
     }
-    for (let i=0;i<side.character.length;i++){
-        if (side.character[i]===target){
-            [side.character[0],side.character[i]]=[side.character[i],side.character[0]]
-            this.AngerSystem.costAngerPercent(side,this.BattleOption.SwitchCostPercent)
-            return;
-        }
+    for (let i = 0; i < side.character.length; i++) {
+      if (side.character[i] === target) {
+        [side.character[0], side.character[i]] = [
+          side.character[i],
+          side.character[0],
+        ];
+        this.AngerSystem.costAngerPercent(
+          side,
+          this.BattleOption.SwitchCostPercent
+        );
+        return;
+      }
     }
     throw new Error("switchCharacter: target not found");
   }
 
   //检查是否存在一些限制性的效果导致无法正常使用技能。
   tryUseMove(
-    queue: PriorityQueue<Events>,
+    queue: PriorityQueue<Event>,
     side: Side,
     character: CharacterEntity,
     move: MoveEvent
@@ -65,13 +75,16 @@ export class ActionSystem {
     return true;
   }
   checkHit(
-    queue: PriorityQueue<Events>,
+    queue: PriorityQueue<Event>,
     side: Side,
     character: CharacterEntity,
     move: MoveEvent
-  ){
-    if (this.RandomSystem.Bool(move.accuracy)) {
-      return false;
+  ) {
+    if (!move.original.ignoreAccuracy) {
+      const right = move.accuracy * character.accuracy * move.target.accuracy;
+      if (this.RandomSystem.Bool(right)) {
+        return false;
+      }
     }
     queue.enqueue({
       type: EventType.CheckCrit,
@@ -83,14 +96,16 @@ export class ActionSystem {
     return true;
   }
   checkCrit(
-    queue: PriorityQueue<Events>,
+    queue: PriorityQueue<Event>,
     side: Side,
     character: CharacterEntity,
     move: MoveEvent
-  ){
+  ) {
     let crit = false;
-    if (this.RandomSystem.Bool(move.critRate)) {
-      crit = true;
+    if (!move.original.alwayCrit) {
+      if (this.RandomSystem.Bool(move.critRate)) {
+        crit = true;
+      }
     }
     queue.enqueue({
       type: EventType.Damage,
@@ -102,17 +117,17 @@ export class ActionSystem {
     });
     return true;
   }
-    hit(
-        queue: PriorityQueue<Events>,
-        side: Side,
-        character: CharacterEntity,
-        move: MoveEvent,
-        crit: boolean
-    ){
-        if (move.category!="status"){
-            this.DamageAndHealSystem.damage(character,move.target,move,crit);
-        }
-        //TODO:追加效果
-        return true;
+  hit(
+    queue: PriorityQueue<Event>,
+    side: Side,
+    character: CharacterEntity,
+    move: MoveEvent,
+    crit: boolean
+  ) {
+    if (move.category != "status") {
+      this.DamageAndHealSystem.damage(character, move.target, move, crit);
     }
+    //TODO:追加效果
+    return true;
+  }
 }

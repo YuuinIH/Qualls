@@ -1,4 +1,4 @@
-import { NatureDex } from "@/nature";
+import { NatureDex } from "@/entity/character";
 
 export enum NatureName {
   Hardy="Hardy",
