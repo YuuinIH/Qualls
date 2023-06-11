@@ -1,0 +1,22 @@
+{
+  "name": "qualls",
+  "version": "1.0.0",
+  "description": "qualls",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YuuinIH/Qualls.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YuuinIH/Qualls/issues"
+  },
+  "homepage": "https://github.com/YuuinIH/Qualls#readme",
+  "dependencies": {
+    "log4js": "^6.9.1"
+  }
+}
